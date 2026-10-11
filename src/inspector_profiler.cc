@@ -544,11 +544,10 @@ static void StartCoverage(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  // The parent of `--test --test-isolation=process` intentionally has no
-  // inspector (see Environment::should_create_inspector); workers handle
-  // coverage themselves. Without an inspector, V8CoverageConnection would
-  // get a null session and crash on the first DispatchMessage.
-  if (!env->should_create_inspector()) {
+  // The parent of `--test --test-isolation=process` does not collect
+  // coverage (see Environment::is_test_runner_orchestrator); the child
+  // processes handle coverage themselves.
+  if (!env->should_create_inspector() || env->is_test_runner_orchestrator()) {
     return;
   }
 

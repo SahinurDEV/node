@@ -207,6 +207,21 @@ void Environment::InitializeInspector(
   }
 
   CHECK(!inspector_agent_->IsListening());
+
+  if (is_test_runner_orchestrator()) {
+    // The `--inspect*` flags apply to the test child processes. Still create
+    // the inspector, so that it can be opened programmatically (for example
+    // with `inspector.open()` from a `--require` preload, as done by IDE
+    // debuggers), but do not listen, wait for a frontend or start profilers.
+    DebugOptions debug_options = options_->debug_options();
+    debug_options.inspector_enabled = false;
+    debug_options.break_node_first_line = false;
+    debug_options.DisableWaitOrBreakFirstLine();
+    inspector_agent_->Start(
+        inspector_path, debug_options, inspector_host_port(), is_main);
+    return;
+  }
+
   // Inspector agent can't fail to start, but if it was configured to listen
   // right away on the websocket port and fails to bind/etc, this will return
   // false.

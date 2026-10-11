@@ -666,8 +666,14 @@ inline bool Environment::owns_inspector() const {
 
 inline bool Environment::should_create_inspector() const {
   return (flags_ & EnvironmentFlags::kNoCreateInspector) == 0 &&
-         !(options_->test_runner && options_->test_isolation == "process") &&
          !options_->watch_mode;
+}
+
+// The `--test --test-isolation=process` parent process only orchestrates the
+// child processes that run the tests. `--inspect*` and profiling options are
+// forwarded to those children instead of being applied to the orchestrator.
+inline bool Environment::is_test_runner_orchestrator() const {
+  return options_->test_runner && options_->test_isolation == "process";
 }
 
 inline bool Environment::should_wait_for_inspector_frontend() const {
